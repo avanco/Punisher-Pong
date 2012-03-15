@@ -22,7 +22,7 @@ ClearMem
 	DEX			; X--
 	BNE ClearMem
 
-	LDA #90
+	LDA #0
 	STA YPosBall
 	LDA #0
 	STA BallSize
@@ -56,6 +56,12 @@ MainLoop
 	#STA VSYNC	; the time is over -- CHECK OUT-1
 
 	; game logic, timer is running
+	DEC YPosBall
+	LDA YPosBall
+	BNE WaitVBlankEnd
+	LDA #0
+	STA YPosBall
+	
 
 WaitVBlankEnd
 	LDA INTIM	; load timer
@@ -68,28 +74,39 @@ WaitVBlankEnd
 
 	LDA #$F0	; speed
 	STA HMBL
+	LDA #$10	; speed
+	STA HMM0
 	STA WSYNC
 	STA HMOVE	; strobe register like WSYNC
 
 ScanLoop
 	STA WSYNC
 
-	CPY YPosBall
-	BEQ ActiveBallSize
-	LDA BallSize
-	BNE Drawing
-NoBall
-	LDA #0
-	STA ENABL
-	JMP Continue
-ActiveBallSize
-	LDA #8
-	STA BallSize
-Drawing
-	LDA #2
-	STA ENABL
-	DEC BallSize
+	CPY YPosBall		; check if we are at ball position, scanline
+	BEQ ActiveBallSize	;
+	LDA BallSize		;
+	BNE Drawing			;
+NoBall					;
+	LDA #0				;
+	STA ENABL			;
+	JMP Continue		;
+ActiveBallSize			;
+	LDA #8				;
+	STA BallSize		;
+Drawing					;
+	LDA #2				;
+	STA ENABL			;
+	DEC BallSize		;
 Continue
+	LDA #2
+	STA ENAM0
+; check collision
+	LDA #%1000000
+	BIT CXM0FB
+	BEQ NoCollision
+	STY COLUBK	; background color
+	STA CXCLR
+NoCollision
 	DEY
 	BNE ScanLoop
 
