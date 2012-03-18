@@ -17,6 +17,8 @@ Player0Pos = $86
 Player1Pos = $87
 Player0Size = $88
 Player1Size = $89
+PlayerTopPosition = $90
+PlayerDownPosition = $91
 
 Start			; init stuff:
 	SEI		; no interruptions
@@ -32,6 +34,9 @@ ClearMem
 
 	LDA #190
 	STA YPosBall
+	STA PlayerTopPosition
+	LDA #32
+	STA PlayerDownPosition
 	LDA #194
 	STA Top		; it will allow change ball direction to down
 	LDA #6
@@ -82,21 +87,58 @@ MainLoop
 	DEC YPosBall
 	LDA Down
 	CMP YPosBall
-	BNE WaitVBlankEnd
+	BNE EndBallUpDown
 BallUp
 	LDA #1
 	STA DirectionBall
 	INC YPosBall
 	LDA Top
 	CMP YPosBall
-	BNE WaitVBlankEnd
+	BNE EndBallUpDown
 	LDA #0
 	STA DirectionBall
+EndBallUpDown
+	; input control Player0: down and up
+	LDA #%00010000	;Up?
+	BIT SWCHA 
+	BNE SkipMoveDown0
+	LDA PlayerTopPosition
+	CMP Player0Pos
+	BEQ SkipMoveDown0
+	INC Player0Pos
+SkipMoveDown0
+	LDA #%00100000	;Down?
+	BIT SWCHA 
+	BNE SkipMoveUp0
+	LDA PlayerDownPosition
+	CMP Player0Pos
+	BEQ SkipMoveUp0
+	DEC Player0Pos
+SkipMoveUp0
+	; input control Player1: down and up
+	LDA #%00000001	;Up?
+	BIT SWCHA 
+	BNE SkipMoveDown1
+	LDA PlayerTopPosition
+	CMP Player1Pos
+	BEQ SkipMoveDown1
+	INC Player1Pos
+SkipMoveDown1
+	LDA #%00000010	;Down?
+	BIT SWCHA 
+	BNE SkipMoveUp1
+	LDA PlayerDownPosition
+	CMP Player1Pos
+	BEQ SkipMoveUp1
+	DEC Player1Pos
+SkipMoveUp1
 
 WaitVBlankEnd
 	LDA INTIM	; load timer
 	BNE WaitVBlankEnd	; killing time if the timer != 0
 	; 37 VBLANK scanlines has gone
+	STA WSYNC
+	STA RESP1
 	
 	LDY #191	; count scanlines
 	STA WSYNC	; wait for scanline end, we do not wanna begin at the middle of one
@@ -165,14 +207,14 @@ DrawingPlayer1
 OutPlayer1
 
 ; check collision
-	LDA #%1000000
-	BIT CXM0FB
-	BEQ NoCollision
-	STY COLUBK	; background color
-	LDA #0
-	STA ENAM0
-	STA CXCLR
-NoCollision
+	;LDA #%1000000
+	;BIT CXM0FB
+	;BEQ NoCollision
+	;STY COLUBK	; background color
+	;LDA #0
+	;STA ENAM0
+	;STA CXCLR
+;NoCollision
 	DEY
 	BNE ScanLoop
 
