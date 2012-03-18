@@ -17,8 +17,10 @@ Player0Pos = $86
 Player1Pos = $87
 Player0Size = $88
 Player1Size = $89
-PlayerTopPosition = $90
-PlayerDownPosition = $91
+Player0ActualSize = $90
+Player1ActualSize = $91
+LifePlayer0 = $92
+LifePlayer1 = $93
 
 Start			; init stuff:
 	SEI		; no interruptions
@@ -34,9 +36,6 @@ ClearMem
 
 	LDA #190
 	STA YPosBall
-	STA PlayerTopPosition
-	LDA #32
-	STA PlayerDownPosition
 	LDA #194
 	STA Top		; it will allow change ball direction to down
 	LDA #6
@@ -50,8 +49,14 @@ ClearMem
 	STA Player0Pos
 	STA Player1Pos
 	LDA #0
-	STA Player0Size
+	STA Player0Size		; draw controller
 	STA Player1Size
+	LDA #30
+	STA Player0ActualSize	; true size
+	STA Player1ActualSize
+	LDA #30
+	STA LifePlayer0
+	STA LifePlayer1
 
 SetColors
 	LDA #$44
@@ -102,18 +107,12 @@ EndBallUpDown
 	LDA #%00010000	;Up?
 	BIT SWCHA 
 	BNE SkipMoveDown0
-	LDA PlayerTopPosition
-	CMP Player0Pos
-	BEQ SkipMoveDown0
 	INC Player0Pos
 	INC Player0Pos
 SkipMoveDown0
 	LDA #%00100000	;Down?
 	BIT SWCHA 
 	BNE SkipMoveUp0
-	LDA PlayerDownPosition
-	CMP Player0Pos
-	BEQ SkipMoveUp0
 	DEC Player0Pos
 	DEC Player0Pos
 SkipMoveUp0
@@ -121,18 +120,12 @@ SkipMoveUp0
 	LDA #%00000001	;Up?
 	BIT SWCHA 
 	BNE SkipMoveDown1
-	LDA PlayerTopPosition
-	CMP Player1Pos
-	BEQ SkipMoveDown1
 	INC Player1Pos
 	INC Player1Pos
 SkipMoveDown1
 	LDA #%00000010	;Down?
 	BIT SWCHA 
 	BNE SkipMoveUp1
-	LDA PlayerDownPosition
-	CMP Player1Pos
-	BEQ SkipMoveUp1
 	DEC Player1Pos
 	DEC Player1Pos
 SkipMoveUp1
@@ -140,18 +133,39 @@ SkipMoveUp1
 	LDA #%1000000
 	BIT CXP0FB
 	BEQ NoCollisionP0Ball
-	LDA #$10
+	LDA #$10	; ball must go left
 	STA BallLeftRight
-	STA CXCLR
 NoCollisionP0Ball
 	;check collision: Player1 and Ball
 	LDA #%1000000
 	BIT CXP1FB
 	BEQ NoCollisionP1Ball
-	LDA #$F0
+	LDA #$F0	; ball must go right
 	STA BallLeftRight
-	STA CXCLR
 NoCollisionP1Ball
+	;check collision: Ball and PlayField
+	LDA #%10000000
+	BIT CXBLPF
+	BEQ NoCollisionBallPF
+	STA CXCLR	; clear all collisions
+	LDX #$10
+	CPX BallLeftRight	; check ball direction and decide who fail and will suffer punishment
+	BEQ Player1Penalty
+Player0Penalty
+	DEC Player0ActualSize
+	DEC LifePlayer0
+	BEQ EndGame
+	JMP NoCollisionBallPF
+Player1Penalty
+	DEC Player1ActualSize
+	DEC LifePlayer1
+	BEQ EndGame
+	JMP NoCollisionBallPF
+NoCollisionBallPF
+	STA CXCLR	; clear all collisions
+	JMP WaitVBlankEnd
+EndGame
+	JMP Start
 
 WaitVBlankEnd
 	LDA INTIM	; load timer
@@ -201,7 +215,7 @@ NoPlayer0
 	STA GRP0
 	JMP OutPlayer0
 ActivePlayer0Size
-	LDA #30
+	LDA Player0ActualSize	; LDA #30
 	STA Player0Size
 DrawingPlayer0
 	LDA #2
@@ -218,7 +232,7 @@ NoPlayer1
 	STA GRP1
 	JMP OutPlayer1
 ActivePlayer1Size
-	LDA #30
+	LDA Player1ActualSize	;LDA #30
 	STA Player1Size
 DrawingPlayer1
 	LDA #2
@@ -254,7 +268,6 @@ OverScanWait
 ; to put the binary data that we labeled "Start" at the location we established
 ; with org.  And then we do it again for $FFFE/$FFFF, which is for a special
 ; event called a BRK which you don't have to worry about now.
- 
 	org $FFFC
 	.word Start
 	.word Start
