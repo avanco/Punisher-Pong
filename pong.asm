@@ -106,6 +106,7 @@ EndBallUpDown
 	CMP Player0Pos
 	BEQ SkipMoveDown0
 	INC Player0Pos
+	INC Player0Pos
 SkipMoveDown0
 	LDA #%00100000	;Down?
 	BIT SWCHA 
@@ -113,6 +114,7 @@ SkipMoveDown0
 	LDA PlayerDownPosition
 	CMP Player0Pos
 	BEQ SkipMoveUp0
+	DEC Player0Pos
 	DEC Player0Pos
 SkipMoveUp0
 	; input control Player1: down and up
@@ -123,6 +125,7 @@ SkipMoveUp0
 	CMP Player1Pos
 	BEQ SkipMoveDown1
 	INC Player1Pos
+	INC Player1Pos
 SkipMoveDown1
 	LDA #%00000010	;Down?
 	BIT SWCHA 
@@ -131,7 +134,24 @@ SkipMoveDown1
 	CMP Player1Pos
 	BEQ SkipMoveUp1
 	DEC Player1Pos
+	DEC Player1Pos
 SkipMoveUp1
+	;check collision: Player0 and Ball
+	LDA #%1000000
+	BIT CXP0FB
+	BEQ NoCollisionP0Ball
+	LDA #$10
+	STA BallLeftRight
+	STA CXCLR
+NoCollisionP0Ball
+	;check collision: Player1 and Ball
+	LDA #%1000000
+	BIT CXP1FB
+	BEQ NoCollisionP1Ball
+	LDA #$F0
+	STA BallLeftRight
+	STA CXCLR
+NoCollisionP1Ball
 
 WaitVBlankEnd
 	LDA INTIM	; load timer
@@ -206,15 +226,7 @@ DrawingPlayer1
 	DEC Player1Size
 OutPlayer1
 
-; check collision
-	;LDA #%1000000
-	;BIT CXM0FB
-	;BEQ NoCollision
-	;STY COLUBK	; background color
-	;LDA #0
-	;STA ENAM0
-	;STA CXCLR
-;NoCollision
+
 	DEY
 	BNE ScanLoop
 
