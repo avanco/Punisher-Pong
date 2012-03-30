@@ -1,0 +1,5 @@
+This is an Atari 2600 game. You can edit the source code and build it using Dasm assembler (http://sourceforge.net/projects/dasm-dillon/?_test=b).
+
+$ dasm pong.asm -f3 -opong.bin
+
+Any questions write me: avanco89 at gmail

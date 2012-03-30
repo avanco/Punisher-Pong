@@ -215,7 +215,7 @@ NoPlayer0
 	STA GRP0
 	JMP OutPlayer0
 ActivePlayer0Size
-	LDA Player0ActualSize	; LDA #30
+	LDA Player0ActualSize
 	STA Player0Size
 DrawingPlayer0
 	LDA #2
@@ -232,7 +232,7 @@ NoPlayer1
 	STA GRP1
 	JMP OutPlayer1
 ActivePlayer1Size
-	LDA Player1ActualSize	;LDA #30
+	LDA Player1ActualSize
 	STA Player1Size
 DrawingPlayer1
 	LDA #2
