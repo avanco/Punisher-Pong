@@ -2,5 +2,3 @@ This is an Atari 2600 game. You can edit the source code and build it using Dasm
 And vcs.h file should sit in the same directory where you are assembling.
 
 $ dasm pong.asm -f3 -opong.bin
-
-Any questions write me: avanco89 at gmail
